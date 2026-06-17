@@ -20,7 +20,7 @@ export async function buildAnswerLineFromSearchResultItem(item: ITiddlerFields, 
   try {
     link = await getShortLink(link);
   } catch (error) {
-    console.error(`获取短连接失败 ${error.message}`);
+    console.error(`No se pudo obtener una conexion corta ${error.message}`);
   }
   return `# ${sensitiveWordsFilter.filter(`${caption}${tagsString}${creator}${modifier}`).text}\n${link}`;
 }
@@ -35,31 +35,31 @@ export async function answerQuestionSearchWiki(
   const urlEncodedQuery = encodeURIComponent(filter);
   const url = `http://${WIKI_URL}/recipes/default/tiddlers.json?filter=${urlEncodedQuery}`;
   try {
-    console.log(`请求地址：${url}  filter: ${filter}`);
+    console.log(`Solicitar direccion：${url}  filter: ${filter}`);
     const searchResult: ITiddlerFields[] = await fetch(url).then((res) => res.json());
     if (searchResult.length === 0) {
-      console.log(`搜索结果为空 ${url}`);
+      console.log(`Los resultados de la busqueda estan vacios ${url}`);
     }
     const answerResult = await Promise.all<string>(searchResult.map((item) => buildAnswerLineFromSearchResultItem(item, website, params)));
 
     let paginationTutorial = '';
     if (answerResult.length === count) {
       // means maybe we have more results, teach user how to do pagination
-      paginationTutorial = `> 通过 ${command} ${query} -p ${pagination + 1} 查看更多结果，或 -c ${count * 2} 来增加返回量`;
+      paginationTutorial = `> Pase ${command} ${query} -p ${pagination + 1} Ver mas resultados, o -c ${count * 2} Para aumentar el monto de la devolucion`;
     }
     void saveShortLinkCache();
     return `${answerResult.join('\n')}
 ${paginationTutorial}
-${name} 搜索完毕，欢迎下次光临`;
+${name} Busqueda completada, bienvenido a visitarnos la proxima vez.`;
   } catch (error) {
-    const errorMessage = `! ${name}搜索失败
+    const errorMessage = `! ${name}La busqueda fallo
 
-报错：
+Informar errores：
 \`\`\`log
 ${error.message}
 \`\`\`
-请求地址：${url}
-请检查wiki是否可用，或者联系管理员`;
+Solicitar direccion：${url}
+Por favor verifiquewiki¿Esta disponible o contacta al administrador?`;
     console.error(errorMessage);
     return errorMessage;
   }
